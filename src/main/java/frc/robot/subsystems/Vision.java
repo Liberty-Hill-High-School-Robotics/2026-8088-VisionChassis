@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -25,10 +24,12 @@ public class Vision extends SubsystemBase {
 
   // make sure the name in quotes is EXACTLY the same as it is in PV
   PhotonCamera AprilTagCam = new PhotonCamera("AprilTagCam");
+  PhotonCamera OBJCam = new PhotonCamera("OBJCam");
   private final Field2d field = new Field2d();
   private final EstimateConsumer estConsumer;
   private final PhotonPoseEstimator photonEstimator;
   private Matrix<N3, N1> curStdDevs;
+  private double objYaw;
 
   public Vision(EstimateConsumer estConsumer) {
     this.estConsumer = estConsumer;
@@ -57,7 +58,7 @@ public class Vision extends SubsystemBase {
             var estStdDevs = getEstimationStdDevs();
             estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
           });
-
+          /*
       if (result.hasTargets()) {
         for (PhotonTrackedTarget tgt : result.getTargets()) {
           if (tgt.getFiducialId() == 3) { // Center on tag ID #3
@@ -69,6 +70,17 @@ public class Vision extends SubsystemBase {
         }
       } else {
         SmartDashboard.putBoolean("TARGET", false);
+}
+        */
+    }
+
+    for (PhotonPipelineResult result : OBJCam.getAllUnreadResults()) {
+      if (result.hasTargets()) {
+        PhotonTrackedTarget tgt = result.getBestTarget();
+        objYaw = tgt.getYaw();
+        SmartDashboard.putBoolean("FUEL", true);
+        SmartDashboard.putNumber("objYaw", objYaw);
+
       }
     }
   }
@@ -98,23 +110,17 @@ public class Vision extends SubsystemBase {
       int numTags = 0;
       double avgDist = 0;
 
-      // Decide what tags to base pose off of
-      List<Integer> trustedTags = new ArrayList<>();
-      trustedTags.add(21);
-
       // Precalculation - see how many tags we found, and calculate an average-distance metric
       for (PhotonTrackedTarget tgt : targets) {
-        if (trustedTags.contains(tgt.getFiducialId())) {
-          var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
-          if (tagPose.isEmpty()) continue;
-          numTags++;
-          avgDist +=
-              tagPose
-                  .get()
-                  .toPose2d()
-                  .getTranslation()
-                  .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
-        }
+        var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+        if (tagPose.isEmpty()) continue;
+        numTags++;
+        avgDist +=
+            tagPose
+                .get()
+                .toPose2d()
+                .getTranslation()
+                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
 
         if (numTags == 0) {
           // No tags visible. Default to single-tag std devs
@@ -142,5 +148,9 @@ public class Vision extends SubsystemBase {
   @FunctionalInterface
   public static interface EstimateConsumer {
     public void accept(Pose2d pose, double timestamp, Matrix<N3, N1> estimationStdDevs);
+  }
+
+  public double getObjYaw() {
+    return objYaw;
   }
 }

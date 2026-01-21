@@ -8,7 +8,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -20,7 +19,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.OIConstants;
+// command imports
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.Vision.DetectAndIntake;
+// subsystems imports
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -28,6 +30,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+
+import java.util.logging.Logger;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -156,16 +161,9 @@ public class RobotContainer {
                 m_drive)
             .ignoringDisable(true));
 
-    // Example for positioning based on a single target
-    PIDController targetPid = new PIDController(1.5, .225, 0);
-    final Trigger swerveToTarget = m_driverController.y();
-    swerveToTarget.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            m_drive,
-            () -> -targetPid.calculate(SmartDashboard.getNumber("cameraX", 0), 1),
-            () -> -targetPid.calculate(SmartDashboard.getNumber("cameraY", 0), 0),
-            () -> new Rotation2d()));
-    targetPid.close();
+    // Example for positioning based on a target
+    final Trigger PointAtTarget = m_driverController.y();
+    PointAtTarget.whileTrue(new DetectAndIntake(m_vision, m_drive));
   }
 
   /**
