@@ -30,9 +30,6 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
-
-import java.util.logging.Logger;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -92,6 +89,11 @@ public class RobotContainer {
         m_vision = new Vision(m_drive::addVisionMeasurement);
         break;
     }
+
+    // Set up SmartDashboard Outputs
+    SmartDashboard.putNumber("Vx", m_drive.getChassisSpeeds().vxMetersPerSecond);
+    SmartDashboard.putNumber("Vy", m_drive.getChassisSpeeds().vyMetersPerSecond);
+    SmartDashboard.putNumber("Va", m_drive.getChassisSpeeds().omegaRadiansPerSecond);
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

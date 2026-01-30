@@ -58,20 +58,20 @@ public class Vision extends SubsystemBase {
             var estStdDevs = getEstimationStdDevs();
             estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
           });
-          /*
-      if (result.hasTargets()) {
-        for (PhotonTrackedTarget tgt : result.getTargets()) {
-          if (tgt.getFiducialId() == 3) { // Center on tag ID #3
-            SmartDashboard.putBoolean("TARGET", true);
-            SmartDashboard.putNumber("cameraX", tgt.getBestCameraToTarget().getX());
-            SmartDashboard.putNumber("cameraY", tgt.getBestCameraToTarget().getY());
-            SmartDashboard.putNumber("cameraZ", tgt.getBestCameraToTarget().getZ());
-          }
-        }
-      } else {
-        SmartDashboard.putBoolean("TARGET", false);
-}
-        */
+      /*
+            if (result.hasTargets()) {
+              for (PhotonTrackedTarget tgt : result.getTargets()) {
+                if (tgt.getFiducialId() == 3) { // Center on tag ID #3
+                  SmartDashboard.putBoolean("TARGET", true);
+                  SmartDashboard.putNumber("cameraX", tgt.getBestCameraToTarget().getX());
+                  SmartDashboard.putNumber("cameraY", tgt.getBestCameraToTarget().getY());
+                  SmartDashboard.putNumber("cameraZ", tgt.getBestCameraToTarget().getZ());
+                }
+              }
+            } else {
+              SmartDashboard.putBoolean("TARGET", false);
+      }
+              */
     }
 
     for (PhotonPipelineResult result : OBJCam.getAllUnreadResults()) {
@@ -80,7 +80,6 @@ public class Vision extends SubsystemBase {
         objYaw = tgt.getYaw();
         SmartDashboard.putBoolean("FUEL", true);
         SmartDashboard.putNumber("objYaw", objYaw);
-
       }
     }
   }
