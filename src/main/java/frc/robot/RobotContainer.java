@@ -12,7 +12,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -42,7 +41,6 @@ public class RobotContainer {
   // Subsystems
   private final Drive m_drive;
   private final Vision m_vision;
-
   // Controller
   private final CommandXboxController m_driverController =
       new CommandXboxController(OIConstants.kDriverControllerPort);
@@ -89,11 +87,6 @@ public class RobotContainer {
         m_vision = new Vision(m_drive::addVisionMeasurement);
         break;
     }
-
-    // Set up SmartDashboard Outputs
-    SmartDashboard.putNumber("Vx", m_drive.getChassisSpeeds().vxMetersPerSecond);
-    SmartDashboard.putNumber("Vy", m_drive.getChassisSpeeds().vyMetersPerSecond);
-    SmartDashboard.putNumber("Va", m_drive.getChassisSpeeds().omegaRadiansPerSecond);
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

@@ -7,8 +7,11 @@
 
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.subsystems.drive.DriveConstants.*;
+import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.subsystems.drive.DriveConstants.driveBaseRadius;
+import static frc.robot.subsystems.drive.DriveConstants.maxSpeedMetersPerSec;
+import static frc.robot.subsystems.drive.DriveConstants.moduleTranslations;
+import static frc.robot.subsystems.drive.DriveConstants.ppConfig;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -33,6 +36,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -64,6 +68,11 @@ public class Drive extends SubsystemBase {
       };
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
+
+  private ChassisSpeeds cs;
+  private double vX;
+  private double vY;
+  private double vOmega;
 
   public Drive(
       GyroIO gyroIO,
@@ -173,6 +182,17 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+
+    cs = kinematics.toChassisSpeeds(getModuleStates());
+    this.vX = cs.vxMetersPerSecond;
+    this.vY = cs.vyMetersPerSecond;
+    this.vOmega = cs.omegaRadiansPerSecond;
+
+    // Dashboard Outputs
+    // Chassis Speed
+    SmartDashboard.putNumber("vY", vX);
+    SmartDashboard.putNumber("vX", vY);
+    SmartDashboard.putNumber("vOmega", vOmega);
   }
 
   /**
@@ -259,6 +279,18 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
   public ChassisSpeeds getChassisSpeeds() { // TODO: this exists
     return kinematics.toChassisSpeeds(getModuleStates());
+  }
+
+  public double getVx() { // TODO: this exists
+    return vX;
+  }
+
+  public double getVy() { // TODO: this exists
+    return vY;
+  }
+
+  public double getVomega() { // TODO: this exists
+    return vOmega;
   }
 
   /** Returns the position of each module in radians. */
