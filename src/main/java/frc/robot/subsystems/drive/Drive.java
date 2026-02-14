@@ -183,16 +183,9 @@ public class Drive extends SubsystemBase {
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
 
-    cs = kinematics.toChassisSpeeds(getModuleStates());
-    this.vX = cs.vxMetersPerSecond;
-    this.vY = cs.vyMetersPerSecond;
-    this.vOmega = cs.omegaRadiansPerSecond;
-
-    // Dashboard Outputs
-    // Chassis Speed
-    SmartDashboard.putNumber("vY", vX);
-    SmartDashboard.putNumber("vX", vY);
-    SmartDashboard.putNumber("vOmega", vOmega);
+    SmartDashboard.putNumber("Drive X", getPose().getX());
+    SmartDashboard.putNumber("Drive Y", getPose().getY());
+    SmartDashboard.putNumber("Drive Om", getPose().getRotation().getDegrees());
   }
 
   /**

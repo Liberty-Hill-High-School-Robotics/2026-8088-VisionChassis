@@ -20,7 +20,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.OIConstants;
 // command imports
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ShootInHub;
+import frc.robot.commands.Shooter.ChangeTestPoint;
+import frc.robot.commands.Shooter.TestSetpoint;
 import frc.robot.commands.Vision.DetectAndIntake;
+import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Turret;
 // subsystems imports
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.drive.Drive;
@@ -41,6 +46,8 @@ public class RobotContainer {
   // Subsystems
   private final Drive m_drive;
   private final Vision m_vision;
+  private final Shooter m_shooter;
+  private final Turret m_turret;
   // Controller
   private final CommandXboxController m_driverController =
       new CommandXboxController(OIConstants.kDriverControllerPort);
@@ -61,6 +68,8 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         m_vision = new Vision(m_drive::addVisionMeasurement);
+        m_shooter = new Shooter();
+        m_turret = new Turret();
         break;
 
       case SIM:
@@ -73,6 +82,8 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         m_vision = new Vision(m_drive::addVisionMeasurement);
+        m_shooter = new Shooter();
+        m_turret = new Turret();
         break;
 
       default:
@@ -85,6 +96,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         m_vision = new Vision(m_drive::addVisionMeasurement);
+        m_shooter = new Shooter();
+        m_turret = new Turret();
         break;
     }
 
@@ -159,6 +172,25 @@ public class RobotContainer {
     // Example for positioning based on a target
     final Trigger PointAtTarget = m_driverController.y();
     PointAtTarget.whileTrue(new DetectAndIntake(m_vision, m_drive));
+
+    // Shoot at an RPM  based on a given distance
+    final Trigger ShootAtTrigger = m_driverController.rightBumper();
+    ShootAtTrigger.toggleOnTrue(new ShootInHub(m_turret, m_shooter));
+
+    final Trigger TestSetpoint = m_driverController.leftBumper();
+    TestSetpoint.whileTrue(new TestSetpoint(m_shooter));
+
+    final Trigger IncreaseTestPoint = m_driverController.povUp();
+    IncreaseTestPoint.whileTrue(new ChangeTestPoint(m_shooter, 100.0));
+
+    final Trigger DecreaseTestPoint = m_driverController.povDown();
+    DecreaseTestPoint.whileTrue(new ChangeTestPoint(m_shooter, -100.0));
+
+    final Trigger IncreaseTestPointSmall = m_driverController.start();
+    IncreaseTestPointSmall.whileTrue(new ChangeTestPoint(m_shooter, 10.0));
+
+    final Trigger DecreaseTestPointSmall = m_driverController.back();
+    DecreaseTestPointSmall.whileTrue(new ChangeTestPoint(m_shooter, -10.0));
   }
 
   /**
