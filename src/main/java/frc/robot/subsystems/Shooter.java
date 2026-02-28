@@ -8,9 +8,6 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
-
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // all imports here
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -22,8 +19,11 @@ public class Shooter extends SubsystemBase {
   // motors & variables here, define them and create any PIDs needed
   private SparkFlex shooterMotor;
   private SparkClosedLoopController shooterController;
+  private SparkFlex shooterBackMotor;
+  private SparkClosedLoopController shooterBackController;
 
-  private double testPoint = 3000.0;
+  private double testPoint = 4000.0;
+  private double shooterBackingRatio = .1; // Ratio of back motor speed to front motor speed
 
   public Shooter() {
     // config motor settings here
@@ -40,7 +40,25 @@ public class Shooter extends SubsystemBase {
         .kS(MotorSpeeds.kShooterS)
         .kV(MotorSpeeds.kShooterV)
         .kA(MotorSpeeds.kShooterA);
+    config.inverted(true);
     shooterMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    shooterBackMotor = new SparkFlex(CanIDs.kShooterBackMotor, MotorType.kBrushless);
+    shooterBackController = shooterBackMotor.getClosedLoopController();
+    SparkFlexConfig backConfig = new SparkFlexConfig();
+    backConfig
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .p(MotorSpeeds.kShooterBackP)
+        .i(MotorSpeeds.kShooterBackI)
+        .d(MotorSpeeds.kShooterBackD)
+        .feedForward
+        .kS(MotorSpeeds.kShooterBackS)
+        .kV(MotorSpeeds.kShooterBackV)
+        .kA(MotorSpeeds.kShooterBackA);
+    backConfig.inverted(false);
+    shooterBackMotor.configure(
+        backConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   @Override
@@ -49,6 +67,11 @@ public class Shooter extends SubsystemBase {
     // Put smartdashboard stuff, check for limit switches
     SmartDashboard.putNumber("Shooter Actual", shooterMotor.getEncoder().getVelocity());
     SmartDashboard.putNumber("Test Point", testPoint);
+
+    SmartDashboard.putNumber("Shooter Back Actual", shooterBackMotor.getEncoder().getVelocity());
+    SmartDashboard.putNumber("Back Test Point", testPoint * shooterBackingRatio);
+
+    SmartDashboard.putNumber("Back Ratio", shooterBackingRatio);
   }
 
   @Override
@@ -72,13 +95,19 @@ public class Shooter extends SubsystemBase {
 
   public void testSetpoint() {
     shooterController.setSetpoint(testPoint, ControlType.kVelocity);
+    shooterBackController.setSetpoint(testPoint * shooterBackingRatio, ControlType.kVelocity);
   }
 
   public void changeTestPoint(double amount) {
     testPoint += amount;
   }
 
+  public void changeRatio(double amount) {
+    shooterBackingRatio += amount;
+  }
+
   public void shooterStop() {
     shooterMotor.set(0);
+    shooterBackMotor.set(0);
   }
 }

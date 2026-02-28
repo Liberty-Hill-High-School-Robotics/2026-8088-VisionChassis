@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -21,6 +22,7 @@ import frc.robot.Constants.OIConstants;
 // command imports
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShootInHub;
+import frc.robot.commands.Shooter.ChangeBackingRatio;
 import frc.robot.commands.Shooter.ChangeTestPoint;
 import frc.robot.commands.Shooter.TestSetpoint;
 import frc.robot.commands.Vision.DetectAndIntake;
@@ -120,6 +122,13 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", m_drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    SmartDashboard.putData("TestSetpoint", new TestSetpoint(m_shooter));
+    SmartDashboard.putData("TestPointUP", new ChangeTestPoint(m_shooter, 100.0));
+    SmartDashboard.putData("TestPointUPSmall", new ChangeTestPoint(m_shooter, 10.0));
+    SmartDashboard.putData("TestPointDOWN", new ChangeTestPoint(m_shooter, -100.0));
+    SmartDashboard.putData("TestPointDOWNSmall", new ChangeTestPoint(m_shooter, -10.0));
+    SmartDashboard.putData("ShootAtHub", new ShootInHub(m_turret, m_shooter));
+
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -135,9 +144,9 @@ public class RobotContainer {
     m_drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             m_drive,
-            () -> m_driverController.getLeftY(),
-            () -> m_driverController.getLeftX(),
-            () -> m_driverController.getRightX()));
+            () -> -m_driverController.getLeftY(),
+            () -> -m_driverController.getLeftX(),
+            () -> -m_driverController.getRightX()));
 
     // add button bindings here
     /*
@@ -186,11 +195,18 @@ public class RobotContainer {
     final Trigger DecreaseTestPoint = m_driverController.povDown();
     DecreaseTestPoint.whileTrue(new ChangeTestPoint(m_shooter, -100.0));
 
-    final Trigger IncreaseTestPointSmall = m_driverController.start();
-    IncreaseTestPointSmall.whileTrue(new ChangeTestPoint(m_shooter, 10.0));
+    // Change Ratios
+    final Trigger DecreaseRatio = m_driverController.povLeft();
+    DecreaseRatio.whileTrue(new ChangeBackingRatio(m_shooter, -.1));
 
-    final Trigger DecreaseTestPointSmall = m_driverController.back();
-    DecreaseTestPointSmall.whileTrue(new ChangeTestPoint(m_shooter, -10.0));
+    final Trigger IncreaseRatio = m_driverController.povRight();
+    IncreaseRatio.whileTrue(new ChangeBackingRatio(m_shooter, .1));
+
+    final Trigger DecreaseRatioSmall = m_driverController.start();
+    DecreaseRatioSmall.whileTrue(new ChangeBackingRatio(m_shooter, -.01));
+
+    final Trigger IncreaseRatioSmall = m_driverController.back();
+    IncreaseRatioSmall.whileTrue(new ChangeBackingRatio(m_shooter, .01));
   }
 
   /**

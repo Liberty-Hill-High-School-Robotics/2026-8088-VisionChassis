@@ -34,6 +34,8 @@ public class Turret extends SubsystemBase {
   private Field2d turretField = new Field2d();
   private Field2d targetField = new Field2d();
 
+  double angleToTargetRotations;
+
   public Turret() {
     // config motor settings here
     turretPivot = new SparkFlex(CanIDs.kTurretPivot, MotorType.kBrushless);
@@ -84,23 +86,7 @@ public class Turret extends SubsystemBase {
     if (turretForwardLimit.isPressed()) {
       turretPivot.getEncoder().setPosition(Constants.kTurretForwardLimit);
     }
-  }
 
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run when in simulation
-    // Mostly used for debug and such
-  }
-
-  // Put methods for controlling this subsystem
-  // here. Call these from Commands.
-  // Should include run/stop/run back, etc.
-
-  // as well as check for limits and reset encoders,
-  // return true/false if limit is true, or encoder >= x value
-
-  // Point the turret at a specific point on the field
-  public void TurretPointAtHub() {
     Pose2d setpoint;
     if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
       setpoint = FieldConstants.kBlueHubPose;
@@ -140,20 +126,37 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Robot to Target X", robotToTargetX);
     SmartDashboard.putNumber("Robot to Target Y", robotToTargetY);
     SmartDashboard.putNumber("Turret Angle to Target", angleToTarget);
-    SmartDashboard.putNumber("Turret Distance to Target", angleToTarget);
+    SmartDashboard.putNumber("Turret Distance to Target", robotToTarget);
 
-    double angleToTargetRotations = getTargetAngleRotations(driveOm, angleToTarget);
+    angleToTargetRotations = getTargetAngleRotations(driveOm, angleToTarget);
 
     SmartDashboard.putNumber("Turret Angle to Target Rotations", angleToTargetRotations);
-
-    // https://docs.revrobotics.com/revlib/spark/closed-loop/maxmotion-position-control
-    turretController.setSetpoint(0.0, SparkBase.ControlType.kMAXMotionPositionControl);
 
     turretField.setRobotPose(turretPose);
     SmartDashboard.putData(
         "Turret Pose", turretField); // Use to display turret on field for testing
     targetField.setRobotPose(setpoint);
     SmartDashboard.putData("Turret Target", targetField);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // This method will be called once per scheduler run when in simulation
+    // Mostly used for debug and such
+  }
+
+  // Put methods for controlling this subsystem
+  // here. Call these from Commands.
+  // Should include run/stop/run back, etc.
+
+  // as well as check for limits and reset encoders,
+  // return true/false if limit is true, or encoder >= x value
+
+  // Point the turret at a specific point on the field
+  public void TurretPointAtHub() {
+    // https://docs.revrobotics.com/revlib/spark/closed-loop/maxmotion-position-control
+    turretController.setSetpoint(
+        angleToTargetRotations, SparkBase.ControlType.kMAXMotionPositionControl);
   }
 
   public void turretStop() {

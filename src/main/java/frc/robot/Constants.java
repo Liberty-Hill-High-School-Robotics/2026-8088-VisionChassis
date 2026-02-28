@@ -74,6 +74,9 @@ public final class Constants {
 
     // Shooter
     public static final int kShooterMotor = 13;
+
+    // Shooter
+    public static final int kShooterBackMotor = 14;
   }
 
   public static final class MotorSpeeds {
@@ -94,13 +97,22 @@ public final class Constants {
     public static final double kTurretSpeed = .25;
 
     // Shooter gains
-    public static final double kShooterP = 0.0;
-    public static final double kShooterI = 0.0;
+    public static final double kShooterP = 0.0001;
+    public static final double kShooterI = 0.000000002;
     public static final double kShooterD = 0.0;
     // https://docs.revrobotics.com/revlib/spark/closed-loop/feed-forward-control
-    public static final double kShooterS = 0.0; // Static
-    public static final double kShooterV = 0.0; // Velocity
+    public static final double kShooterS = 0.173; // Static
+    public static final double kShooterV = 0.0017699115044248; // Velocity
     public static final double kShooterA = 0.0; // Acceleration
+
+    // Shooter back motor gains
+    public static final double kShooterBackP = 0.00005;
+    public static final double kShooterBackI = 0.0;
+    public static final double kShooterBackD = 0.00000;
+    // https://docs.revrobotics.com/revlib/spark/closed-loop/feed-forward-control
+    public static final double kShooterBackS = 0.34; // Static
+    public static final double kShooterBackV = 0.0017699115044248; // Velocity
+    public static final double kShooterBackA = 0.0; // Acceleration
   }
 
   public static final class OIConstants {
